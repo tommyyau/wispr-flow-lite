@@ -133,29 +133,60 @@ class VoiceTranscriber:
         retry_count = 0
         while retry_count < MAX_RETRIES:
             try:
+                # Ensure any existing PyAudio instance is properly terminated
+                if hasattr(self, 'audio') and self.audio:
+                    try:
+                        self.audio.terminate()
+                        self.audio = None
+                    except:
+                        pass
+
+                # Get input device with a fresh PyAudio instance
                 self.input_device_index = get_input_device()
                 if self.input_device_index is None:
                     raise Exception("No working input device found")
 
+                # Create new PyAudio instance
                 self.audio = pyaudio.PyAudio()
                 
-                # Test audio setup
-                test_stream = self.audio.open(
-                    format=self.format,
-                    channels=self.channels,
-                    rate=self.rate,
-                    input=True,
-                    input_device_index=self.input_device_index,
-                    frames_per_buffer=self.chunk,
-                    start=False
-                )
-                test_stream.close()
+                # Test audio setup with proper cleanup
+                test_stream = None
+                try:
+                    test_stream = self.audio.open(
+                        format=self.format,
+                        channels=self.channels,
+                        rate=self.rate,
+                        input=True,
+                        input_device_index=self.input_device_index,
+                        frames_per_buffer=self.chunk,
+                        start=False
+                    )
+                    # Test if stream can actually start
+                    test_stream.start_stream()
+                    test_stream.stop_stream()
+                except Exception as e:
+                    if test_stream:
+                        try:
+                            test_stream.close()
+                        except:
+                            pass
+                    raise e
+                finally:
+                    if test_stream:
+                        try:
+                            test_stream.close()
+                        except:
+                            pass
                 return
             except Exception as e:
                 retry_count += 1
                 logger.warning(f"Failed to initialize audio (attempt {retry_count}/{MAX_RETRIES}): {e}")
                 if self.audio:
-                    self.audio.terminate()
+                    try:
+                        self.audio.terminate()
+                    except:
+                        pass
+                    self.audio = None
                 if retry_count < MAX_RETRIES:
                     time.sleep(RETRY_WAIT_SECONDS)
                 else:
@@ -314,22 +345,27 @@ class VoiceTranscriber:
             return False
 
     def _cleanup_stream(self):
-        """Clean up the audio stream"""
-        if self.stream:
+        """Clean up the audio stream with proper error handling"""
+        if hasattr(self, 'stream') and self.stream:
             try:
-                self.stream.stop_stream()
-            except Exception as e:
-                logger.debug(f"Error stopping stream: {e}")
-            try:
+                if self.stream.is_active():
+                    self.stream.stop_stream()
+                time.sleep(0.1)  # Give time for the stream to fully stop
                 self.stream.close()
             except Exception as e:
-                logger.debug(f"Error closing stream: {e}")
-            self.stream = None
+                logger.debug(f"Error during stream cleanup: {e}")
+            finally:
+                self.stream = None
 
     def stop_recording(self):
         """Stop recording audio"""
+        # Set flag first to stop recording loop
         self.is_recording = False
-        time.sleep(0.1)  # Give a moment for the recording loop to finish
+        
+        # Give time for recording loop to finish
+        time.sleep(0.2)
+        
+        # Clean up stream
         self._cleanup_stream()
 
         if not self.audio_frames:
@@ -501,32 +537,45 @@ class VoiceTranscriber:
         try:
             # Stop recording if still active
             if self.is_recording:
-                self.stop_recording()
+                self.is_recording = False
+                time.sleep(0.2)  # Give recording thread time to stop
 
             # Clean up keyboard listener
-            if self.keyboard_listener:
-                self.keyboard_listener.stop()
+            if hasattr(self, 'keyboard_listener') and self.keyboard_listener:
+                try:
+                    self.keyboard_listener.stop()
+                except:
+                    pass
 
             # Clean up audio resources
             self._cleanup_stream()
-            if self.audio:
-                self.audio.terminate()
+            
+            if hasattr(self, 'audio') and self.audio:
+                try:
+                    self.audio.terminate()
+                except Exception as e:
+                    logger.debug(f"Error terminating PyAudio: {e}")
+                self.audio = None
 
             # Clean up temporary files
-            for temp_file in self.temp_files:
-                try:
-                    if os.path.exists(temp_file):
-                        os.remove(temp_file)
-                        logger.debug(f"Removed temporary file: {temp_file}")
-                except Exception as e:
-                    logger.warning(f"Failed to remove temporary file {temp_file}: {e}")
+            if hasattr(self, 'temp_files'):
+                for temp_file in self.temp_files:
+                    try:
+                        if os.path.exists(temp_file):
+                            os.remove(temp_file)
+                            logger.debug(f"Removed temporary file: {temp_file}")
+                    except Exception as e:
+                        logger.warning(f"Failed to remove temporary file {temp_file}: {e}")
 
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")
 
     def __del__(self):
         """Destructor to ensure cleanup"""
-        self.cleanup()
+        try:
+            self.cleanup()
+        except:
+            pass  # Suppress errors during interpreter shutdown
 
 def check_dependencies():
     """Check if all required packages are installed"""
