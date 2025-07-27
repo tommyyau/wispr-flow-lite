@@ -39,4 +39,18 @@ wheels/
 .vscode/
 *.swp
 *.swo
-.cursor/ 
+.cursor/
+
+# Node.js dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json.backup
+
+# Audio temporary files
+*.wav
+*.mp3
+*.m4a
+temp_audio_*

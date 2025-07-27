@@ -7,6 +7,24 @@
 
 A powerful voice-to-text transcription app that works system-wide. Simply hold down the Option/Alt key while speaking, and release it to have your words transcribed directly where your cursor is positioned. Built with OpenAI's Whisper API for high-quality transcription.
 
+## 📱 Two Versions Available
+
+**Choose the version that best fits your needs:**
+
+### 🖥️ Python CLI Version (Current)
+- **Location**: `python-cli/`
+- **For**: Developers and power users
+- **Installation**: Manual Python setup
+- **Interface**: Command-line interface
+- **Status**: ✅ Ready to use
+
+### 🎨 Electron GUI App (Coming Soon)
+- **Location**: `electron-app/`
+- **For**: All users wanting a native Mac app
+- **Installation**: Single DMG file
+- **Interface**: Native macOS application
+- **Status**: 🚧 In development
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/tommyyau/wispr-flow-lite/main/docs/demo.gif" alt="WisprFlow Lite Demo">
 </p>
@@ -26,64 +44,23 @@ A powerful voice-to-text transcription app that works system-wide. Simply hold d
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### Python CLI Version
 
-- Python 3.7 or higher
-- OpenAI API key
-- macOS, Linux, or Windows
-- For macOS: Homebrew (recommended)
+For the command-line version, see detailed instructions in [`python-cli/README.md`](python-cli/README.md).
 
-### Installation
+**Quick setup:**
+```bash
+cd python-cli
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env_example .env  # Edit with your OpenAI API key
+python voice_transcriber.py
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/tommyyau/wispr-flow-lite.git
-   cd wispr-flow-lite
-   ```
+### Electron GUI App
 
-2. **Set up Python environment**
-   ```bash
-   # Create virtual environment
-   python3 -m venv venv
-
-   # Activate it (macOS/Linux)
-   source venv/bin/activate
-
-   # Install packages
-   pip install -r requirements.txt
-   ```
-
-3. **Configure environment**
-   ```bash
-   # Copy example configuration
-   cp .env_example .env
-   
-   # Edit .env with your settings
-   nano .env  # or use any text editor
-   ```
-
-4. **Set up permissions (macOS only)**
-   
-   Go to System Settings > Privacy & Security > Privacy and enable:
-   - Microphone
-   - Accessibility
-   - Input Monitoring
-
-   For detailed permission setup, see [macOS Setup Guide](docs/macos-setup.md)
-
-### Usage
-
-1. **Start the app**
-   ```bash
-   source venv/bin/activate && python voice_transcriber.py
-   ```
-
-2. **Basic controls**
-   - Hold Option/Alt key to record
-   - Release to transcribe
-   - Ctrl+C to quit
-
-For detailed usage instructions and configuration options, see our [User Guide](docs/user-guide.md).
+Coming soon! Will provide a native macOS application with GUI interface.
 
 ## 💰 Cost & Privacy
 

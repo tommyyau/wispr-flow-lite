@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WisprFlow Lite</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-logo">
+                <h1>🎙️ WisprFlow Lite</h1>
+                <p>Voice-to-Text Transcription</p>
+            </div>
+        </header>
+
+        <!-- Status Section -->
+        <section class="status-section">
+            <div class="status-card">
+                <div class="status-indicator" id="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="status-text">Ready</span>
+                </div>
+                <div class="hotkey-info">
+                    <span>Press and hold <kbd>Option</kbd> to record</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recording Status (Background Operation) -->
+        <section class="controls-section">
+            <div class="background-status">
+                <div class="status-message">
+                    <span class="icon">🎯</span>
+                    <div class="message-content">
+                        <h3>Background Mode Active</h3>
+                        <p>Hold <kbd>Option</kbd> anywhere to record, release to transcribe</p>
+                        <p class="cursor-tip">Position cursor where you want text to appear</p>
+                    </div>
+                </div>
+            </div>
+            <div class="recording-timer" id="recording-timer" style="display: none;">
+                <span>Recording: <span id="timer-text">00:00</span></span>
+            </div>
+        </section>
+
+        <!-- Permissions Section -->
+        <section class="permissions-section" id="permissions-section">
+            <h3>Required Permissions</h3>
+            <div class="permission-item">
+                <span class="permission-icon" id="mic-permission-icon">❌</span>
+                <span>Microphone Access</span>
+                <button id="request-mic-btn" class="permission-btn">Request</button>
+            </div>
+            <div class="permission-item">
+                <span class="permission-icon" id="accessibility-permission-icon">❌</span>
+                <span>Accessibility (for typing text)</span>
+                <button id="open-accessibility-btn" class="permission-btn">Open Settings</button>
+            </div>
+        </section>
+
+        <!-- Configuration Section -->
+        <section class="config-section">
+            <h3>Configuration</h3>
+            
+            <div class="config-group">
+                <label for="api-key">OpenAI API Key:</label>
+                <div class="api-key-container">
+                    <input type="password" id="api-key" placeholder="sk-proj-...">
+                    <button id="toggle-api-key" class="toggle-btn">👁️</button>
+                </div>
+                <small>Get your API key from <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI</a></small>
+            </div>
+
+            <div class="config-group">
+                <label for="language">Language:</label>
+                <select id="language">
+                    <option value="auto">Auto-detect</option>
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="ru">Russian</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="zh">Chinese</option>
+                </select>
+            </div>
+
+            <div class="config-group">
+                <label for="max-recording-time">Max Recording Time (seconds):</label>
+                <input type="number" id="max-recording-time" min="10" max="600" value="30">
+            </div>
+
+            <div class="config-group">
+                <label>
+                    <input type="checkbox" id="remove-filler-words" checked>
+                    Remove filler words (um, uh, etc.)
+                </label>
+            </div>
+
+            <div class="config-group">
+                <label for="typing-speed">Typing Speed:</label>
+                <select id="typing-speed">
+                    <option value="0.001">Very Fast</option>
+                    <option value="0.01" selected>Normal</option>
+                    <option value="0.05">Slow</option>
+                    <option value="0.1">Very Slow</option>
+                </select>
+            </div>
+
+            <button id="save-config-btn" class="save-btn">Save Configuration</button>
+        </section>
+
+        <!-- Recent Transcriptions -->
+        <section class="transcriptions-section">
+            <h3>Recent Transcriptions</h3>
+            <div id="transcriptions-list" class="transcriptions-list">
+                <p class="no-transcriptions">No transcriptions yet. Start recording to see them here.</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>💡 Position cursor where you want text to appear before recording</p>
+            <p><small>Cost: ~$0.006 per minute | <a href="https://platform.openai.com/usage" target="_blank">View Usage</a></small></p>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
