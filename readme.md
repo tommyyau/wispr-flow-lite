@@ -1,48 +1,66 @@
 # 🎙️ WisprFlow Lite
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-Whisper-green.svg)](https://platform.openai.com/)
-[![Platform](https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows-lightgrey.svg)](https://github.com/tommyyau/wispr-flow-lite)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Swift 5.9+](https://img.shields.io/badge/swift-5.9+-orange.svg)](https://swift.org/)
+[![Fireworks AI](https://img.shields.io/badge/Fireworks-Whisper%20V3%20Turbo-green.svg)](https://fireworks.ai/)
 
-A powerful voice-to-text transcription app that works system-wide. Simply hold down the Option/Alt key while speaking, and release it to have your words transcribed directly where your cursor is positioned. Built with OpenAI's Whisper API for high-quality transcription.
+A powerful voice-to-text transcription system that works anywhere on your Mac. Hold down the Option/Alt key while speaking, and release it to have your words transcribed directly where your cursor is positioned. Powered by Fireworks AI's Whisper V3 Turbo for fast, accurate transcription.
 
 ## 📱 Two Versions Available
 
 **Choose the version that best fits your needs:**
 
-### 🖥️ Python CLI Version (Current)
-- **Location**: `python-cli/`
-- **For**: Developers and power users
-- **Installation**: Manual Python setup
+### 🍎 macOS Native App (Recommended)
+- **Location**: [`wispr-flow-mac/`](wispr-flow-mac/)
+- **For**: All macOS users
+- **Installation**: Build once with `./build_app.sh`, drag to Applications
+- **Interface**: Native menu bar app with SwiftUI settings
+- **Performance**: ⚡ Lightning fast (native Swift)
+- **Status**: ✅ Production ready
+
+### 🖥️ Python CLI Version
+- **Location**: [`python-cli/`](python-cli/)
+- **For**: Developers, power users, and cross-platform use
+- **Installation**: Python virtual environment
 - **Interface**: Command-line interface
-- **Status**: ✅ Ready to use
-
-### 🎨 Electron GUI App (Coming Soon)
-- **Location**: `electron-app/`
-- **For**: All users wanting a native Mac app
-- **Installation**: Single DMG file
-- **Interface**: Native macOS application
-- **Status**: 🚧 In development
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/tommyyau/wispr-flow-lite/main/docs/demo.gif" alt="WisprFlow Lite Demo">
-</p>
+- **Performance**: Fast (Python + Fireworks AI)
+- **Status**: ✅ Production ready
 
 ## ✨ Features
 
 - 🎯 **Push-to-Talk** - Hold Option key to record, release to transcribe
-- 🎤 **High-quality transcription** - Uses OpenAI Whisper API
-- 🧹 **Smart text cleaning** - Removes filler words (um, uh, etc.)
+- 🎤 **High-quality transcription** - Uses Fireworks AI Whisper V3 Turbo
+- ⚡ **Ultra-fast** - 66% faster than OpenAI Whisper
 - 📝 **Direct typing** - Text appears where your cursor is
-- ⚡ **Fast processing** - Quick transcription and typing
 - 🌍 **Multi-language** - Supports 100+ languages
-- 🔧 **Customizable** - Configure language, filler words, and more
+- 🔧 **Customizable** - Configure language, typing speed, and more
 - 🔄 **Robust Error Handling** - Automatic retries for API calls and better resource management
 - 📊 **Memory Management** - Prevents crashes during long recordings
 - 🔍 **Advanced Logging** - Better error tracking and debugging
 
+
 ## 🚀 Quick Start
+
+### macOS Native App (Recommended)
+
+1. **Navigate to the directory:**
+   ```bash
+   cd wispr-flow-mac
+   ```
+
+2. **Build the app:**
+   ```bash
+   ./build_app.sh
+   ```
+
+3. **Install:**
+   - Drag `Wispr Flow Lite.app` to your Applications folder
+   - Launch the app
+   - Grant Microphone and Accessibility permissions
+   - Enter your Fireworks AI API key in Settings
+
+For detailed instructions, see [`wispr-flow-mac/README.md`](wispr-flow-mac/README.md).
 
 ### Python CLI Version
 
@@ -54,20 +72,16 @@ cd python-cli
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-cp .env_example .env  # Edit with your OpenAI API key
-python voice_transcriber.py
+cp .env_example .env  # Edit with your Fireworks API key
+python voice_transcriber_fireworks.py
 ```
-
-### Electron GUI App
-
-Coming soon! Will provide a native macOS application with GUI interface.
 
 ## 💰 Cost & Privacy
 
-- OpenAI Whisper API: $0.006 per minute
+- Fireworks AI Whisper V3 Turbo: ~$0.002 per minute (66% cheaper than OpenAI)
 - No audio stored locally
-- Data sent to OpenAI for transcription
-- Monitor usage: [OpenAI Dashboard](https://platform.openai.com/usage)
+- Data sent to Fireworks AI for transcription
+- Monitor usage: [Fireworks AI Dashboard](https://fireworks.ai/account)
 
 ## 🤝 Contributing
 
@@ -79,7 +93,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- OpenAI for the Whisper API
+- Fireworks AI for the Whisper V3 Turbo API
 - Original WisprFlow app for inspiration
 - All contributors and users
 

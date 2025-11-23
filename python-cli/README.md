@@ -8,7 +8,7 @@ This is the original command-line Python voice transcription application.
    ```bash
    cd python-cli
    python3 -m venv venv
-   source venv/bin/activate  # macOS/Linux
+ # macOS/Linux
    ```
 
 2. **Install Dependencies**:

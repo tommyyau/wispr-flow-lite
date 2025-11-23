@@ -80,96 +80,198 @@ If ANY of these occur, IMMEDIATELY stop and follow the enforcement workflow:
 
 ## Project Overview
 
-WisprFlow Lite is a voice-to-text transcription application built in Python that works system-wide. It uses OpenAI's Whisper API for transcription and provides push-to-talk functionality using the Option/Alt key.
+WisprFlow Lite is a dual-version voice-to-text transcription application that works system-wide. It uses OpenAI's Whisper API for transcription and provides push-to-talk functionality. The project offers both a Python CLI version for developers and an Electron GUI app for end users.
 
-## Core Architecture
+## Dual-Version Architecture
 
-### Main Application
-- **`voice_transcriber.py`**: Single-file Python application containing the complete VoiceTranscriber class
+### Python CLI Version (`python-cli/`)
+- **Status**: ✅ Ready to use
+- **Target**: Developers and power users
+- **Multiple stable versions available**:
+  - `voice_transcriber_openai.py` - Original OpenAI implementation
+  - `voice_transcriber_fireworks.py` - Fireworks AI integration with filler word removal (66% faster)
+  - `voice_transcriber_fireworks_no_filler.py` - **RECOMMENDED** - Fireworks AI without text processing (66% faster, maximum stability)
 - **Key components**:
   - Audio recording with PyAudio
-  - OpenAI Whisper API integration 
+  - Fireworks AI Whisper Turbo API integration 
+  - Performance-optimized logging for maximum speed
   - Global keyboard listener using pynput
   - Text injection via pyautogui
   - Robust error handling and resource cleanup
+  - Configuration via `.env` files
 
-### Configuration
-- **`.env`**: Environment configuration (API keys, audio settings, text processing)
-- **`.env_example`**: Template with all available configuration options
-- **`requirements.txt`**: Python dependencies
+### Electron GUI App (`electron-app/`)
+- **Status**: 🚧 In development
+- **Target**: All users wanting a native Mac app
+- **Architecture**: Electron wrapper around Python backend
+- **Key files**:
+  - `src/main/main.js`: Electron main process
+  - `src/renderer/`: Frontend interface
+  - `src/python/`: Python backend integration
+  - IPC communication between Electron and Python processes
+
+### Configuration Structure
+- **Python CLI**: `.env` files in `python-cli/` directory
+- **Electron app**: Configuration managed through GUI with backend `.env` generation
+- **Template**: `.env_example` shows all available configuration options
 
 ## Common Development Commands
 
-### Environment Setup
+### Python CLI Version Development
 ```bash
+# Navigate to Python CLI directory
+cd python-cli
+
 # Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate  # macOS/Linux
 
-# Install dependencies
+# Install dependencies (includes VAD and MP3 support)
 pip install -r requirements.txt
-```
 
-### Running the Application
-```bash
-# Start the voice transcriber
-source venv/bin/activate && python voice_transcriber.py
-
-# Using the installer script
-python install.py
-```
-
-### Configuration Management
-```bash
-# Copy example configuration
+# Setup configuration
 cp .env_example .env
+# Edit .env with your Fireworks API key (FIREWORKS_API_KEY=your-key-here)
 
-# Edit configuration
-nano .env  # or any text editor
+# Run the RECOMMENDED version (maximum stability)
+python voice_transcriber_fireworks_no_filler.py
+
+# Alternative versions:
+python voice_transcriber_openai.py           # Original OpenAI version
+python voice_transcriber_fireworks.py        # Fireworks with filler word removal
+```
+
+### Electron App Development
+```bash
+# Navigate to Electron app directory
+cd electron-app
+
+# Install Node.js dependencies
+npm install
+
+# Development mode (with hot reload)
+npm run dev
+
+# Build Python backend
+npm run build-python
+
+# Build complete application
+npm run build
+
+# Create distribution package
+npm run dist
+```
+
+### Cross-Version Testing
+```bash
+# Test stable Python CLI from root
+cd python-cli && source venv/bin/activate && python voice_transcriber_fireworks_no_filler.py
+
+# Test other Python versions
+cd python-cli && source venv/bin/activate && python voice_transcriber_fireworks.py
+
+# Test Electron app from root
+cd electron-app && npm run dev
 ```
 
 ## Key Configuration Options
 
-Essential settings in `.env`:
-- `OPENAI_API_KEY`: Required OpenAI API key
+Essential settings in `.env` (all versions):
+- `FIREWORKS_API_KEY`: Required Fireworks AI API key (recommended)
+- `OPENAI_API_KEY`: Required for OpenAI version only
 - `LANGUAGE`: Transcription language (en, es, fr, auto, etc.)
-- `SAMPLE_RATE`: Audio quality (16000 or 44100)
-- `MAX_RECORDING_TIME`: Maximum recording duration in seconds
+- `HOTKEY`: Keyboard trigger - **Note**: Globe/Fn key is now default for all versions
+- `SAMPLE_RATE`: Audio quality (16000 optimal for Whisper)
+- `MAX_RECORDING_TIME`: Maximum recording duration in seconds (default: 30)
+- `VAD_ENABLED`: Enable Voice Activity Detection (true recommended)
+- `VAD_THRESHOLD`: VAD sensitivity (0.5 default, lower = more sensitive)
+- `ENABLE_DEBUG_LOGGING`: Enable detailed logging (false for max performance)
+- `PERFORMANCE_MODE`: Enable performance optimizations (true recommended)
 - `REMOVE_FILLER_WORDS`: Enable/disable filler word removal
-- `TYPING_INTERVAL`: Delay between typed characters
+- `CUSTOM_FILLER_WORDS`: Additional filler words to remove
+- `TYPING_INTERVAL`: Delay between typed characters (0.005 = very fast)
+- `CHUNK_SIZE`: Audio chunk size (4096 optimal)
 
 ## Platform-Specific Considerations
 
-### macOS Requirements
-- Microphone permissions required
-- Accessibility permissions for keyboard monitoring
-- Input Monitoring permissions for global hotkeys
-- See `docs/macos-setup.md` for detailed permission setup
+### macOS Requirements (Critical for both versions)
+Both Python CLI and Electron app require these system permissions:
+- **Microphone access**: For audio recording
+- **Accessibility permissions**: For keyboard monitoring and text injection
+- **Input Monitoring permissions**: For global hotkey detection
+
+**Setup**: See `docs/macos-setup.md` for detailed permission setup guide. Permissions must be granted to:
+- Terminal.app (for CLI version)
+- Python executable path (for CLI version)
+- Electron app bundle (for GUI version)
+- Any IDE being used for development (Cursor, VSCode, etc.)
 
 ### Audio Device Management
-The application includes sophisticated audio device detection and error handling:
+Both versions include sophisticated audio device detection:
 - Automatic device selection with fallback options
-- Resource cleanup with retry logic
+- Resource cleanup with retry logic and delays
 - Memory management for long recordings
+- Graceful error handling for device unavailability
 
-## Development Notes
+## Development Architecture Notes
 
-### Error Handling Patterns
-- Uses tenacity library for API retry logic
-- Comprehensive resource cleanup in destructors
-- Device availability monitoring during recording
-- Graceful degradation when permissions are missing
+### Python CLI Version (`python-cli/voice_transcriber.py`)
+- **Pattern**: Single-class design with clear separation of concerns
+- **Threading**: Thread-safe audio recording and processing
+- **Memory**: Temporary file management with automatic cleanup
+- **Error handling**: Uses tenacity library for API retry logic
+- **Resources**: Comprehensive cleanup in destructors with device monitoring
 
-### Code Structure
-- Single-class design with clear separation of concerns
-- Thread-safe audio recording and processing
-- Temporary file management with automatic cleanup
-- Configurable text processing pipeline
+### Electron GUI Version
+- **Pattern**: Main process communicates with Python backend via IPC
+- **Frontend**: HTML/CSS/JS renderer process
+- **Backend**: Python integration through spawn processes
+- **Build**: PyInstaller creates standalone Python executable
+- **Distribution**: Electron-builder creates native macOS DMG
+
+### Inter-Version Code Reuse
+- Core transcription logic shared between versions
+- Configuration management patterns consistent
+- Error handling and retry logic unified
+- Audio device detection algorithms identical
+
+## Performance Comparison
+
+### Speed Improvements by Version
+| Version | Avg Response Time | Improvement | Best For |
+|---------|------------------|-------------|----------|
+| OpenAI Original | 2058ms | Baseline | OpenAI API required |
+| Fireworks Basic | 693ms | 66% faster | Simple migration |
+| **Fireworks + VAD** | **157-587ms** | **30-82% faster** | **All use cases (recommended)** |
+
+### Benefits Summary
+- **VAD Filtering**: Reduces API calls by 30-60% by skipping silence
+- **Performance Logging**: Eliminates 20-50ms console I/O overhead
+- **Combined**: Up to 15x faster than original OpenAI implementation
+- **Cost Savings**: ~60% reduction in API costs through efficiency gains
+
+### Performance Testing
+```bash
+# Test VAD performance with different silence levels
+python test_vad_performance.py
+
+# Compare all transcriber versions
+python compare_transcribers.py
+
+# Quick performance comparison
+python quick_performance_test.py
+```
 
 ## Testing and Validation
 
-No formal test suite exists. Manual testing involves:
-- Verifying microphone permissions and audio device detection
-- Testing transcription accuracy with various speech patterns
-- Validating text injection across different applications
-- Confirming proper resource cleanup after interruption
+**Manual testing workflow**:
+- Verify system permissions are properly configured
+- Test microphone detection across different audio devices
+- Validate transcription accuracy with various speech patterns and languages
+- Test text injection across different applications (TextEdit, browsers, IDEs)
+- Confirm proper resource cleanup after recording interruption
+- Test configuration changes take effect without restart
+- Validate hotkey combinations work globally
+- Test memory management during extended recording sessions
+
+**Platform testing**: Focus on macOS permission edge cases and audio device switching scenarios.

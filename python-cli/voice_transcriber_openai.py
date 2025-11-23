@@ -100,9 +100,9 @@ class VoiceTranscriber:
         # Initialize audio with retry
         self._initialize_audio()
         
-        # Using Option/Alt key as hotkey
-        self.using_option_key = True
-        self.option_pressed = False
+        # Using Globe/Fn key as hotkey
+        self.using_globe_key = True
+        self.globe_pressed = False
         
         # Language setting
         self.language = os.getenv('LANGUAGE', 'en')
@@ -124,7 +124,7 @@ class VoiceTranscriber:
             self.filler_words.update(custom_list)
         
         logger.info(f"🎙️ Voice Transcriber initialized")
-        logger.info(f"📋 Hotkey: Option/Alt key")
+        logger.info(f"📋 Hotkey: Globe/Fn key")
         logger.info(f"🌍 Language: {self.language}")
         logger.info(f"⏱️ Max recording time: {self.record_seconds}s")
 
@@ -277,8 +277,9 @@ class VoiceTranscriber:
             
             self.is_recording = True
             self.audio_frames = []
+            self.recording_start_time = time.perf_counter()  # Track recording start time
             
-            logger.info("🎤 Recording... Release Option/Alt key when done.")
+            logger.info("🎤 Recording... Release Globe/Fn key when done.")
             
             start_time = time.time()
             last_device_check = time.time()
@@ -359,6 +360,8 @@ class VoiceTranscriber:
 
     def stop_recording(self):
         """Stop recording audio"""
+        stop_time = time.perf_counter()
+        
         # Set flag first to stop recording loop
         self.is_recording = False
         
@@ -372,36 +375,64 @@ class VoiceTranscriber:
             logger.warning("⚠️ No audio data recorded")
             return
 
+        # Calculate recording duration and data size
+        if hasattr(self, 'recording_start_time'):
+            recording_duration = stop_time - self.recording_start_time
+            audio_size = sum(len(frame) for frame in self.audio_frames)
+            logger.info(f"📊 Recording stats: {recording_duration:.1f}s duration, {audio_size} bytes, {len(self.audio_frames)} chunks")
+
         # Process the recording in a separate thread
         processing_thread = threading.Thread(target=self._process_audio)
         processing_thread.daemon = True
         processing_thread.start()
 
     def _process_audio(self):
-        """Process the recorded audio"""
+        """Process the recorded audio with detailed timing"""
+        process_start = time.perf_counter()
         try:
             # Save audio to file
+            file_start = time.perf_counter()
             audio_file = self.save_audio_to_file()
+            file_time = (time.perf_counter() - file_start) * 1000
+            
             if not audio_file:
                 logger.error("❌ Failed to save audio file")
                 return
 
+            logger.info(f"📊 Audio file created in {file_time:.1f}ms")
+
             # Transcribe audio
-            logger.info("🔄 Transcribing audio...")
+            transcribe_start = time.perf_counter()
+            logger.info("🔄 Transcribing audio with OpenAI...")
             text = self.transcribe_audio(audio_file)
+            transcribe_time = (time.perf_counter() - transcribe_start) * 1000
             
             if not text:
                 logger.warning("⚠️ No text transcribed")
                 return
 
+            logger.info(f"📊 Transcription completed in {transcribe_time:.0f}ms")
+
             # Clean up the text
+            clean_start = time.perf_counter()
             cleaned_text = self.clean_text(text)
+            clean_time = (time.perf_counter() - clean_start) * 1000
+            
+            logger.info(f"📊 Text cleaning completed in {clean_time:.1f}ms")
             
             # Type the text
             if cleaned_text:
+                type_start = time.perf_counter()
                 self.type_text(cleaned_text)
+                type_time = (time.perf_counter() - type_start) * 1000
+                logger.info(f"📊 Text typing completed in {type_time:.0f}ms")
             else:
                 logger.warning("⚠️ No text to type after cleaning")
+
+            # Total processing time
+            total_time = (time.perf_counter() - process_start) * 1000
+            logger.info(f"🏁 Total processing time: {total_time:.0f}ms")
+            logger.info(f"📈 Transcribed: '{cleaned_text[:50]}{'...' if len(cleaned_text) > 50 else ''}'")
 
         except Exception as e:
             logger.error(f"❌ Processing error: {e}")
@@ -468,23 +499,68 @@ class VoiceTranscriber:
     def on_press(self, key):
         """Handle key press events"""
         try:
-            # Check if it's the Option/Alt key
-            if key == keyboard.Key.alt_l or key == keyboard.Key.alt_r:
-                if not self.option_pressed:
-                    self.option_pressed = True
-                    # Start recording immediately
-                    self.start_recording()
+            # Check for Globe key (Fn key) - multiple detection methods
+            globe_key_detected = False
+            
+            # Method 1: Direct Fn key detection (if available)
+            if hasattr(keyboard.Key, 'fn') and key == keyboard.Key.fn:
+                globe_key_detected = True
+            
+            # Method 2: String comparison for Fn key
+            elif str(key) == 'Key.fn':
+                globe_key_detected = True
+                
+            # Method 3: Virtual key code for Fn key (macOS specific)
+            elif hasattr(key, 'vk') and key.vk == 179:
+                globe_key_detected = True
+                
+            # Method 4: Right Command key as alternative (more reliable on macOS)
+            elif key == keyboard.Key.cmd_r:
+                globe_key_detected = True
+                
+            # Method 5: F13 key as alternative (often unmapped and available)
+            elif hasattr(key, 'name') and key.name == 'f13':
+                globe_key_detected = True
+            
+            if globe_key_detected and not self.globe_pressed:
+                self.globe_pressed = True
+                # Start recording immediately
+                self.start_recording()
+                
         except AttributeError:
             pass
 
     def on_release(self, key):
         """Handle key release events"""
         try:
-            # Check if it's the Option/Alt key
-            if key == keyboard.Key.alt_l or key == keyboard.Key.alt_r:
-                self.option_pressed = False
+            # Check for Globe key (Fn key) release - multiple detection methods
+            globe_key_released = False
+            
+            # Method 1: Direct Fn key detection (if available)
+            if hasattr(keyboard.Key, 'fn') and key == keyboard.Key.fn:
+                globe_key_released = True
+            
+            # Method 2: String comparison for Fn key
+            elif str(key) == 'Key.fn':
+                globe_key_released = True
+                
+            # Method 3: Virtual key code for Fn key (macOS specific)
+            elif hasattr(key, 'vk') and key.vk == 179:
+                globe_key_released = True
+                
+            # Method 4: Right Command key as alternative (more reliable on macOS)
+            elif key == keyboard.Key.cmd_r:
+                globe_key_released = True
+                
+            # Method 5: F13 key as alternative (often unmapped and available)
+            elif hasattr(key, 'name') and key.name == 'f13':
+                globe_key_released = True
+            
+            if globe_key_released:
+                self.globe_pressed = False
                 # Stop recording and process immediately
                 self.stop_recording()
+                
         except AttributeError:
             pass
     
@@ -498,7 +574,8 @@ class VoiceTranscriber:
             )
             self.keyboard_listener.start()
             
-            print(f"🎯 Ready! Press and hold Option/Alt key to record, release to transcribe.")
+            print(f"🎯 Ready! Press and hold Globe/Fn key (or Right Cmd/F13) to record, release to transcribe.")
+            print("💡 Note: If Globe key doesn't work, try Right Command or F13 key")
             print("💡 Position your cursor where you want text to appear")
             print("⏹️ Press Ctrl+C to quit")
             print()
