@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>WisprFlowLite</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.tommyyau.WisprFlowLite</string>
+    <key>CFBundleName</key>
+    <string>Wispr Flow Lite</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleShortVersionString</key>
+    <string>2.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.0</string>
+    <key>LSUIElement</key>
+    <true/>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Wispr Flow Lite needs access to your microphone to transcribe your voice.</string>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>Wispr Flow Lite needs to control other applications to type text.</string>
+    <key>NSAccessibilityUsageDescription</key>
+    <string>Wispr Flow Lite needs accessibility permissions to type text into other apps.</string>
+</dict>
+</plist>

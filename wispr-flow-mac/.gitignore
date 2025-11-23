@@ -1,0 +1,17 @@
+# Swift Build Artifacts
+.build/
+*.app/
+
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcworkspace
+!default.xcworkspace
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+
+# iconset (temporary)
+*.iconset/
